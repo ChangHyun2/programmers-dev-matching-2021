@@ -19,5 +19,6 @@ export default class App {
 
   render() {
     this.children.forEach((child) => child.render && child.render());
+    this.$target.querySelector('.SearchInput').focus();
   }
 }

@@ -3,12 +3,11 @@ export default class Loading {
     this.$el = document.createElement('div');
     this.$el.className = 'loading';
     this.$el.innerHTML = `
-      <div class="lds-ring">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
+      <span class="loading">
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+      </span>
     `;
 
     document.body.append(this.$el);

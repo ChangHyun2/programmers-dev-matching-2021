@@ -2,9 +2,9 @@ export default class DarkModeToggler {
   constructor($target) {
     this.$target = $target;
 
-    this.$element = document.createElement('button');
-    this.$element.textContent = 'toggle darkmode';
-    this.$element.onclick = () => {
+    this.$el = document.createElement('button');
+    this.$el.textContent = 'toggle darkmode';
+    this.$el.onclick = () => {
       let originTheme = document.body.dataset.theme;
 
       if (!originTheme) {
@@ -18,6 +18,6 @@ export default class DarkModeToggler {
       document.body.setAttribute('data-theme', toggledTheme);
     };
 
-    this.$target.append(this.$element);
+    this.$target.append(this.$el);
   }
 }

@@ -30,8 +30,6 @@ export default class SearchResult {
       return JSON.parse($catCard.dataset.catInfo);
     }
 
-    const loading = new Loading();
-
     try {
       const { data } = await api.fetchCatById($catCard.dataset.id);
 
@@ -52,8 +50,6 @@ export default class SearchResult {
           ? e.message
           : '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요.'
       );
-    } finally {
-      loading.$el.remove();
     }
   }
 
@@ -81,14 +77,14 @@ export default class SearchResult {
 
   async onClick(e) {
     if (this.isLoading) return;
-    this.isLoading = true;
 
     const $catCard = e.target.closest('.item');
-
     if (!$catCard) {
       return;
     }
 
+    const loading = new Loading();
+    this.isLoading = true;
     try {
       const catInfo = await this.getCatInfo($catCard);
 
@@ -96,6 +92,7 @@ export default class SearchResult {
     } catch (e) {
       new ErrorMessage($catCard, e.message);
     } finally {
+      loading.$el.remove();
       this.isLoading = false;
     }
   }

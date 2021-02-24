@@ -62,7 +62,6 @@ export default class ImageInfo {
     </div>`;
 
     this.$el.focus();
-    this.$el.classList.remove('fade-out');
     this.$el.classList.add('fade-in');
   }
 }
