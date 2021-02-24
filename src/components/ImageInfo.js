@@ -1,23 +1,25 @@
+import Component from './Component.js';
 import api from '../api.js';
 import { ErrorMessage, Loading } from '../UI/index.js';
-export default class ImageInfo {
+
+export default class ImageInfo extends Component {
   constructor($parent, data) {
-    this.$parent = $parent;
+    super($parent, 'div', {
+      className: 'ImageInfo',
+      tabindex: 0,
+    });
     this.data = data;
 
-    const $el = document.createElement('div');
-    $el.className = 'ImageInfo';
-    $el.setAttribute('tabindex', 0);
-    this.$el = $el;
-
-    $parent.append($el);
-
-    this.onClick = this.onClick.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
     this.bindEvents();
   }
 
-  onClick(e) {
+  removeWithFadeOut = () => {
+    this.$el.classList.remove('fade-in');
+    this.$el.classList.add('fade-out');
+    this.$el.ontransitionend = () => this.$el.remove();
+  };
+
+  onClick = (e) => {
     const clickedClassName = e.target.className;
     if (
       clickedClassName === 'close' ||
@@ -25,26 +27,13 @@ export default class ImageInfo {
     ) {
       this.removeWithFadeOut();
     }
-  }
-  onKeyDown(e) {
+  };
+  onKeyDown = (e) => {
     e.key === 'Escape' && this.removeWithFadeOut();
-  }
+  };
 
-  bindEvents() {
-    this.$el.addEventListener('click', this.onClick);
-    this.$el.addEventListener('keydown', this.onKeyDown);
-  }
-
-  removeWithFadeOut() {
-    this.$el.classList.remove('fade-in');
-    this.$el.classList.add('fade-out');
-    this.$el.ontransitionend = () => this.$el.remove();
-  }
-
-  async render() {
+  render = async () => {
     const { url, name, temperament, origin } = this.data;
-
-    console.log(url, name, temperament, origin);
 
     this.$el.innerHTML = `
     <div class="content-wrapper">
@@ -63,5 +52,5 @@ export default class ImageInfo {
 
     this.$el.focus();
     this.$el.classList.add('fade-in');
-  }
+  };
 }

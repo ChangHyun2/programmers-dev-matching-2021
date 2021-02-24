@@ -1,3 +1,4 @@
+import Component from './Component.js';
 import ImageInfo from './ImageInfo.js';
 import store from '../store.js';
 import api from '../api.js';
@@ -7,25 +8,20 @@ import lazyLoad from '../utils/lazyLoad.js';
 
 const errorMessage = '선택하신 고양이 상세 정보를 불러올 수 없습니다.';
 
-export default class SearchResult {
+export default class SearchResult extends Component {
   constructor($parent) {
+    super($parent, 'div', {
+      className: 'SearchResult',
+    });
     this.isLoading;
-
-    this.$parent = $parent;
-    this.$el = document.createElement('div');
-    this.$el.className = 'SearchResult';
-    $parent.append(this.$el);
 
     store.set('search-result', localStorage.get('cats-search-result') || []);
     store.subscribe('search-result', this);
 
-    this.onClick = this.onClick.bind(this);
-    this.onMouseOut = this.onMouseOut.bind(this);
-    this.onMouseOver = this.onMouseOver.bind(this);
     this.bindEvents();
   }
 
-  async getCatInfo($catCard) {
+  getCatInfo = async ($catCard) => {
     if ($catCard.dataset.catInfo) {
       return JSON.parse($catCard.dataset.catInfo);
     }
@@ -51,9 +47,9 @@ export default class SearchResult {
           : '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요.'
       );
     }
-  }
+  };
 
-  onMouseOver(e) {
+  onMouseOver = (e) => {
     const item = e.target.closest('.item');
     if (!item) return;
 
@@ -66,16 +62,16 @@ export default class SearchResult {
     $itemName.className = 'item-name';
 
     item.querySelector('.img-wrapper').append($itemName);
-  }
+  };
 
-  onMouseOut(e) {
+  onMouseOut = (e) => {
     const item = e.target.closest('.item');
     if (!item) return;
 
     item.querySelector('.item-name').remove();
-  }
+  };
 
-  async onClick(e) {
+  onClick = async (e) => {
     if (this.isLoading) return;
 
     const $catCard = e.target.closest('.item');
@@ -95,7 +91,7 @@ export default class SearchResult {
       loading.$el.remove();
       this.isLoading = false;
     }
-  }
+  };
 
   render() {
     this.$el.innerHTML = store
@@ -113,11 +109,5 @@ export default class SearchResult {
       .join('');
 
     lazyLoad();
-  }
-
-  bindEvents() {
-    this.$el.addEventListener('click', this.onClick);
-    this.$el.addEventListener('mouseover', this.onMouseOver);
-    this.$el.addEventListener('mouseout', this.onMouseOut);
   }
 }

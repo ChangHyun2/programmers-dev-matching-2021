@@ -1,19 +1,22 @@
+import Component from '../components/Component.js';
+
 const DURATION = 1500;
 
-export default class ErorrMessage {
-  constructor($target = document.body, message) {
-    const { bottom, left } = $target.getBoundingClientRect();
+export default class ErorrMessage extends Component {
+  constructor($parent = document.body, message) {
+    super([$parent, 'afterend'], 'div', {
+      className: 'ErrorMessage',
+      textContent: message,
+      styles: {
+        position: 'fixed',
+        zIndex: 1001,
+      },
+    });
 
-    const $el = document.createElement('div');
-    $el.className = 'error-message';
-    $el.textContent = message;
-    $el.style.position = 'fixed';
-    $el.style.left = left + 'px';
-    $el.style.top = `${bottom + 50}px`;
-    $el.style.zIndex = 1001;
-    this.$el = $el;
+    const { bottom, left } = $parent.getBoundingClientRect();
+    this.$el.style.left = left + 'px';
+    this.$el.style.top = `${bottom + 50}px`;
 
-    $target.insertAdjacentElement('afterend', this.$el);
     this.$el.classList.add('fade-in');
 
     setTimeout(() => {

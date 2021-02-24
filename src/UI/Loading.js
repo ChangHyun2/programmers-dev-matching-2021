@@ -1,15 +1,16 @@
-export default class Loading {
-  constructor() {
-    this.$el = document.createElement('div');
-    this.$el.className = 'loading';
-    this.$el.innerHTML = `
-      <span class="loading">
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-        <span class="loading-dot"></span>
-      </span>
-    `;
+import Component from '../components/Component.js';
 
-    document.body.append(this.$el);
+export default class Loading extends Component {
+  constructor() {
+    super(document.body, 'div', {
+      classname: 'loading',
+      innerHTML: `
+        <span class="loading">
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+          <span class="loading-dot"></span>
+        </span>
+      `,
+    });
   }
 }

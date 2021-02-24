@@ -1,14 +1,12 @@
+import Component from '../Component.js';
 import store from '../../store.js';
 import localStorage from '../../utils/localStorage.js';
 
-export default class SearchHistory {
-  constructor($target) {
-    this.$target = $target;
-
-    this.$el = document.createElement('ul');
-    this.$el.className = 'SearchHistory';
-
-    this.$target.append(this.$el);
+export default class SearchHistory extends Component {
+  constructor($parent) {
+    super($parent, 'ul', {
+      className: 'SearchHistory',
+    });
 
     store.set('search-history', []);
     store.subscribe('search-history', this);
