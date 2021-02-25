@@ -1,12 +1,15 @@
 import Component from '../components/Component.js';
 
-const DURATION = 1500;
+const DURATION = 2000;
 
 export default class ErorrMessage extends Component {
-  constructor($parent = document.body, message) {
+  constructor($parent = document.body, message, status) {
     super([$parent, 'afterend'], 'div', {
       className: 'ErrorMessage',
-      textContent: message,
+      innerHTML: `
+        ${status ? `<div>${status} Error!</div>` : ''}
+        <div>${message}</div>
+      `,
       styles: {
         position: 'fixed',
         zIndex: 1001,

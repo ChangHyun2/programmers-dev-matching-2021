@@ -1,3 +1,4 @@
+import TypeError from '../../utils/TypeError.js';
 import Component from '../Component.js';
 import { ErrorMessage, Loading } from '../../UI/index.js';
 import api from '../../api.js';
@@ -21,22 +22,28 @@ export default class SearchInput extends Component {
     const loading = new Loading();
 
     try {
-      const res = await api.fetchCats(searchedKeyword);
+      const res = await api.getCats(searchedKeyword);
 
-      if (!res.data.length) throw new Error(errorMessage);
+      if (!res.data.length)
+        throw new TypeError(
+          '검색하신 고양이 이미지가 존재하지 않습니다. 다른 고양이를 검색해주세요.',
+          'data'
+        );
 
       store.set('search-result', res.data);
       localStorage.set('cats-search-result', res.data);
     } catch (e) {
-      console.warn(e);
+      let message;
 
-      new ErrorMessage({
-        $parent: this.$el.closest('.Search'),
-        message:
-          e.message === errorMessage
-            ? e.message
-            : '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요.',
-      });
+      if (e.type === 'api' || e.type === 'data') {
+        console.warn(e);
+        message = e.message;
+      } else {
+        console.error(e);
+        message = `알 수 없는 에러가 발생했습니다. ${e.message}`;
+      }
+
+      new ErrorMessage(this.$el.closest('.Search'), message, e.status);
     } finally {
       loading.$el.remove();
     }
@@ -50,16 +57,12 @@ export default class SearchInput extends Component {
     store.set('search-history', [...data, value]);
   };
 
-  onKeyUp = async (e) => {
+  onKeyUp = (e) => {
     const searchedKeyword = e.target.value;
 
     if (e.keyCode === 13) {
       this.updateSearchHistory(searchedKeyword);
-      try {
-        await this.updateSearchResult(searchedKeyword);
-      } catch (e) {
-        console.error(e);
-      }
+      this.updateSearchResult(searchedKeyword);
     }
   };
 

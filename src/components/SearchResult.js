@@ -1,3 +1,4 @@
+import TypeError from '../utils/TypeError.js';
 import Component from './Component.js';
 import ImageInfo from './ImageInfo.js';
 import store from '../store.js';
@@ -5,8 +6,6 @@ import api from '../api.js';
 import { Loading, ErrorMessage } from '../UI/index.js';
 import localStorage from '../utils/localStorage.js';
 import lazyLoad from '../utils/lazyLoad.js';
-
-const errorMessage = '선택하신 고양이 상세 정보를 불러올 수 없습니다.';
 
 export default class SearchResult extends Component {
   constructor($parent) {
@@ -27,25 +26,31 @@ export default class SearchResult extends Component {
     }
 
     try {
-      const { data } = await api.fetchCatById($catCard.dataset.id);
+      const { data } = await api.getCatById($catCard.dataset.id);
 
       if (!Object.keys(data).length) {
-        throw new Error(errorMessage);
+        throw new TypeError(
+          '선택하신 고양이 상세 정보를 불러올 수 없습니다.',
+          'data'
+        );
       }
 
       $catCard.dataset.catInfo = JSON.stringify(data);
 
       const { id, url, name, temperament, origin } = data;
-
       return { id, url, name, temperament, origin };
     } catch (e) {
-      console.error(e);
+      let message;
 
-      throw new Error(
-        e.message === errorMessage
-          ? e.message
-          : '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요.'
-      );
+      if (e.type === 'api' || e.type === 'data') {
+        console.warn(e);
+        message = e.message;
+      } else {
+        console.error(e);
+        message = `알 수 없는 에러가 발생했습니다. ${e.message}`;
+      }
+
+      new ErrorMessage($catCard, message, e.status);
     }
   };
 
@@ -79,18 +84,16 @@ export default class SearchResult extends Component {
       return;
     }
 
-    const loading = new Loading();
     this.isLoading = true;
-    try {
-      const catInfo = await this.getCatInfo($catCard);
+    const loading = new Loading();
 
+    const catInfo = await this.getCatInfo($catCard);
+    if (catInfo) {
       new ImageInfo(document.body, catInfo).render();
-    } catch (e) {
-      new ErrorMessage($catCard, e.message);
-    } finally {
-      loading.$el.remove();
-      this.isLoading = false;
     }
+
+    loading.$el.remove();
+    this.isLoading = false;
   };
 
   render() {

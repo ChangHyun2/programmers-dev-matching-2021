@@ -32,7 +32,7 @@ export default class ImageInfo extends Component {
     e.key === 'Escape' && this.removeWithFadeOut();
   };
 
-  render = async () => {
+  render = () => {
     const { url, name, temperament, origin } = this.data;
 
     this.$el.innerHTML = `
