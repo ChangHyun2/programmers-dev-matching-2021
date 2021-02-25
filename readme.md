@@ -1,22 +1,360 @@
-# 주제(시나리오)
+# 2021.02.25
 
-고양이를 좋아하는 당신은 고양이 사진 전용 검색 웹사이트를 운영하고 있었습니다. 지금까지는 혼자 소소하게 운영해왔는데, 생각보다 고양이 사진을 원하는 사람들이 많아지면서 해결해야 할 문제들이 하나씩 드러나기 시작했어요. 몇 개의 문제는 금세 고칠 수 있지만, 기존 코드를 자세히 봐야만 고칠 수 있는 문제들도 있어서 조금 골치아픈 상황! 심지어 최대 4시간 내에 수정한 뒤 배포를 해야만 합니다. 당신이라면 기존 서비스의 여러 버그를 제한시간 내에 고치고, 유저를 위한 추가 기능까지 구현해볼 수 있을까요? 도전해보세요!
+## 컴포넌트 클래스 작성
 
-## 과제 설명
+인자 정보
+1. target : 부모 element
+  - `[$parent, 'afterend']` => 컴포넌트를 insertAdjacentElement할 경우 
+  - `$parent` => 컴포넌트를 append할 경우
+2. tag : HTML 태그
+3. attributes : 돔 속성
+  - setAttribute 방식이 아닌, 객체 속성으로 바로 할당하는 방식 적용 (성능 상 좋지 않다고 함)
+  - style 속성은 styles로 한번에 전달
+  
+```js
+// Component.js
+export default class Component {
+  constructor(target, tag, attributes) {
+    let insertPosition;
 
-- thecatapi 에서 크롤링한 데이터를 이용해 이미지를 검색하는 베이스 코드가 주어집니다.
-- 베이스 코드는 모두 ES6 클래스 기반으로 작성되어 있으며, 이 코드에는 여러 개의 버그가 존재합니다. 요구사항을 잘 읽고, 버그를 하나씩 해결해주세요.
+    if (target instanceof Array) {
+      [this.$parent, insertPosition] = target;
+    } else {
+      this.$parent = target;
+    }
 
-## 수행 기술
+    const $el = document.createElement(tag);
+    Object.entries(attributes).forEach(([fieldName, fieldValue]) => {
+      // styles는 각 style value를 하나씩 할당
+      if (fieldName === 'styles') {
+        return Object.entries(fieldValue).forEach(([fieldName, fieldValue]) => {
+          $el.style[fieldName] = fieldValue;
+        });
+      }
 
-- JavaScript(ES6)
-- 설치되어있는 모듈(node_modules) 외에 다른 외부 라이브러리는 사용하지 않도록 합니다. 예를들어 jQuery, Webpack, Lodash, Axios, Angular, React, Vue, Immutable-js, Ramda 등을 사용할 수 없습니다.
+      $el[fieldName] = fieldValue;
+    });
+    this.$el = $el;
 
----
+    insertPosition
+      ? this.$parent.insertAdjacentElement(insertPosition, this.$el)
+      : this.$parent.append(this.$el);
+  }
 
-## 요구사항
+  bindEvents() {
+    // field를 돌면서 핸들러 네이밍일 경우 this를 바인딩하고 event listen.
 
-참고 요구사항의 순서는 난이도와 상관이 없음
+    Object.entries(this).forEach(([fieldName, fieldValue]) => {
+      if (fieldName.indexOf('on') === -1) return;
+
+      const eventType = fieldName.slice(2).toLowerCase();
+
+      this.$el.addEventListener(eventType, fieldValue); 
+    });
+  }
+}
+
+// Button.js
+
+class Button extends Component{
+  constructor($parent){
+    super($parent, 'button', {
+      className : "Button",
+      styles : {
+        backgroundColor: '#fff'
+        border: '1px solid'
+        outline: 'none',
+        cursor: 'pointer',
+      }
+    })
+    console.log(this) // { $el, $parent, bindEvents }
+
+    this.bindEvents();
+  }
+
+  onClick = (e) => {
+    e.target.disabled = true;
+  }
+  onDisabled = () => {
+    console.log('button is disabled');
+  }
+
+  render(){
+    // 구성자 함수 호출과 함께 바로 렌더링할 경우 super()에서 할당해도 무방
+    this.$el.textContent = 'disable button'
+  }
+}
+
+// create button component
+const $button = new Button(document.body);
+
+// render
+$button.render();
+```
+
+## 에러 핸들링
+
+**에러의 종류**
+
+- [1] server로부터 전달는 상태 에러
+- [2] 개발자의 잘못된 코드 작성 또는 의도치 않은 코드 실행에 의한 에러
+- [3] 개발자가 유저에게 에러를 알리기 위해 의도적으로 throw한 에러
+
+**개발자와 유저의 에러 확인 방법**
+
+1. 개발자
+   
+   1.1 개발 중
+   - console.error : 에러 [1]을 로깅할 때 사용
+   - console.warn : 에러 [2],[3]을 로깅할 때 사용
+   - ErrrorMessage UI 또는 페이지
+  
+   1.2 배포 후
+   - 클아이언트의 에러 피드백
+  
+2. 클라이언트 유저
+   - ErrorMessage UI 또는 페이지
+
+## 에러 핸들링 구현 방식 요약
+
+컴포넌트에서 데이터 요청 함수를 실행할 경우
+
+1. api 함수 호출
+2. data 유무 확인
+3. 필요한 data 리턴
+
+위 순으로 try문을 작성하고  
+에러가 발생할 경우 catch문에서 에러의 종류에 따라 핸들링함 
+
+## 커스텀 에러 사용하기
+
+catch문에서 error를 catch할 경우, 어떤 에러인지 확인하는 게 불가능하므로  
+커스텀 에러를 만들어 에러에 메세지와 함께 추가 정보 전달한다.  
+https://javascript.info/custom-errors
+
+**Type Error**
+
+```js
+// TypeError.js : 에러의 타입을 나타냄
+export default class TypeError extends Error {
+  constructor(message, type) {
+    super(message);
+    this.type = type;
+  }
+}
+
+
+// 사용 예시
+
+// api 호출 함수
+const getCard = () => throw new TypeError('500 status error', 'api')
+
+// MyComponent.js 
+try{
+  const card = await getCard()
+  if(!card) throw new TypeError('card does not exist', 'data')
+  erturn card 
+}catch(e){
+  if(e.type==='api'){} // api 요청 에러 처리
+  else if(e.type==='data'){} // data 유효성 에러 처리
+  else{} // 코드 작성 에러 처리
+}
+```
+
+**ApiError**
+
+유저에게 상태 정보에 따라 서로 다른 페이지를 보여줄 경우,  
+catch하는 에러 메세지에서 status코드를 포함할 경우 쉽게 핸들링할 수 있다.
+
+```js
+
+// ApiError.js 구현
+import TypeError from './TypeError.js';
+
+export default class ApiError extends TypeError {
+  constructor(message, type, status) {
+    super(message, type);
+    this.status = status;
+  }
+}
+
+// 사용 예시
+
+const getCard = () => throw new ApiError('Internal Server error from getCard with status 500', 'api', 500)
+
+// MyComponent.js
+try{
+  const card = await getCard()
+  return card;
+}catch(e){
+  if(e.type==='api'){  
+    alertError(e.message, e.status)
+  } 
+  //.. ..//
+}
+
+```
+
+## console.error와 console.warn 분리하기
+
+console.warn : 코드에 문제가 없는 loose한 에러
+- api 상태 에러
+- data 유효성 에러 => ex) 유저가 검색한 고양이가 없는 경우
+- 이외 추가적인 TypeError에 의해 throw되는 의도적인 에러
+ 
+console.error : 반드시 수정해야될 에러
+- 코드 실행에 의해 발생하는 에러
+
+```js
+catch (e) {
+  let message;
+
+  if (e.type === 'api' || e.type === 'data') {
+    console.warn(e); // api, data validation에 의한 에러로, 사용자에게 보여줄 loose한 에러
+    message = e.message;
+  } else {
+    console.error(e); // 개발 시 처리해야될 치명적인 에러
+    message = `알 수 없는 에러가 발생했습니다. ${e.message}`;
+
+    // .. // 배포에서 의도치 않게 에러가 발생할 경우 개밡 팀으로 에러 피드백
+  }
+
+  // 에러 메세지 UI 띄우기
+
+  // 개발 시 에러 메세지는 페이지로 띄우고
+  // 유저 에러 메세지는 팝업형식이나 상태 코드별 페이지를 띄우면 좋을 듯
+  new ErrorMessage($catCard, message, e.status); 
+}
+```
+
+## API 호출 함수 에러 핸들링
+
+```js
+import ApiError from './utils/ApiError.js';
+
+const API_ENDPOINT =
+  'https://oivhcpn8r9.execute-api.ap-northeast-2.amazonaws.com/dev'; 
+const STATUS_ERROR_MESSAGE = // 클라이언트에 띄울 메세지
+  '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요';
+
+const statusErrorMessages = [ 
+  false,
+  'Redirects Error',
+  'Client Error',
+  'Server Error',
+];
+
+// 개발 디버깅 시 사용할 에러 메세지 생성
+const getStatusErrorMessage = (res, name) => { 
+  const errorTypes = [300, 400, 500, 600];
+
+  for (let i = 0; i < errorTypes.length; i++) {
+    const errorType = errorTypes[i];
+
+    if (res.status < errorType) {
+      if (errorType === 300) return false;
+
+      return `API request error : ${statusErrorMessages[i]} with status code ${res.status} from ${name}`;
+    }
+  }
+};
+
+const fetchData = async (url, name) => {
+  try {
+    const res = await fetch(url);
+
+    const statusErrorMessage = getStatusErrorMessage(res, name);
+    if (statusErrorMessage) // 상태 에러일 경우 status code 포함해서 에러 throw하기
+      throw new ApiError(statusErrorMessage, 'status', res.status);
+
+    return res.json();
+  } catch (e) {
+    // 요청 상태 에러 처리
+    if (e.type === 'status') {
+      console.warn(e); // 개발 디버깅에 필요한 에러 로깅 => 컴포넌트 내에서는 UI에 집중하기 위해 api 호출 함수에서 warn 로그 처리
+
+      throw new ApiError(STATUS_ERROR_MESSAGE, 'api', e.status); // UI에서 사용할 에러 메세지, 상태 코드와 함께 throw
+    }
+
+    // 코드 에러 처리
+    throw new Error(e);
+  }
+};
+
+const api = {
+  getCats: (keyword) =>
+    fetchData(`${API_ENDPOINT}/api/cats/search?q=${keyword}`, 'get cats'),
+  getCatById: (id) =>
+    fetchData(`${API_ENDPOINT}/api/cats/${id}`, 'get catById'),
+  getRandomCats: () =>
+    fetchData(`${API_ENDPOINT}/api/cats/random50`, 'get randomCats'),
+};
+
+export default api;
+
+```
+
+## 컴포넌트 데이터 요청 함수 에러 핸들링
+
+**api 호출 함수로부터 전달 받는 에러 형식**
+1. ApiError => (상태 코드에 의한 throw된 에러)
+- type
+- message
+- status
+2. Error  (코드 작성 또는 코드 실행 오류에 의한 에러)
+- message
+
+**api 호출 함수에 의한 에러 대응 방법**
+1. ApiError를 전달 받을 경우, API 호출 함수에서 console.warn 처리를 했으니, UI만 띄우기
+2. Error를 전달 받을 경우, 개발에서 수정해야하므로 console.error 처리해주고, 확인에 용이한 UI Message 띄우기
+
+**이외의 추가적인 TypeError**
+컴포넌트 데이터 요청 함수 내에서 새로운 타입의 에러를 생성해야할 경우,
+TypeError를 throw하기
+
+```js
+  /*  SearchResult.js
+        SearchResult 컴포넌트의 getCatInfo 함수 요약
+        고양이 카드 element를 전달받고 고양이 정보를 요청한 후
+        정보가 있을 경우 CatInfo를 리턴하는 함수
+  */
+  getCatInfo = async ($catCard) => {
+    try {
+      // api 요청 실패 시 ApiError 또는 Error를 catch하게 됨
+      const { data } = await api.getCatById($catCard.dataset.id); 
+
+      // api 요청에 성공했으나 컴포넌트 렌더링에 사용할 데이터가 invalid할 경우
+      if (!Object.keys(data).length) { 
+        throw new TypeError(
+          '선택하신 고양이 상세 정보를 불러올 수 없습니다.',
+          'data' // data type의 에러 throw
+        );
+      }
+
+      const { id, url, name, temperament, origin } = data;
+      return { id, url, name, temperament, origin };
+    } catch (e) {
+      let message;
+
+      // api 또는 data 타입의 에러일 경우 
+      if (e.type === 'api' || e.type === 'data') {
+        console.warn(e); // UI 메세지 console.warn
+        message = e.message;
+      } else {
+        console.error(e); // 이외의 에러는 개발 시 처리해야될 에러
+        message = `알 수 없는 에러가 발생했습니다. ${e.message}`;
+        // .. // 배포에서 발생할 경우 개발 팀으로 피드백하기
+      }
+
+      // UI 메세지 띄우기
+      // type을 포함하는 loose한 에러는 토스트를 띄우고
+      // type을 포함하지 않는 strict한 에러는 전체화면을 띄워 개발에서 놓치지 않게끔 수정하기
+      new ErrorMessage($catCard, message, e.status);
+    }
+  };
+```
+
+# 2021.02.24
 
 ### HTML, CSS 관련
 
