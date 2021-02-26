@@ -161,6 +161,147 @@ api요청/캐싱/에러핸들링 코드가 반복돼 이를 줄이기 위해 컴
 
 3. util , UI는 index.js에서 export하도록 수정
 
+## 3. 무한 스크롤 구현하기
+
+여러 방법 중 Intersection Observer API 사용  
+loading 속성의 경우 width : 100% 적용 시 width,height가 없어 레이지 로딩 불가
+  
+1. observeBottomOf.js : `element`의 아래 부분에 도달할 떄 `onBottom` 핸들러를 실행하는 유틸 함수
+2. SearchResult.infiniteNextCats : `this.$el` 아래 부분에 위치할 경우 nextCats 추가 렌더링
+3. SearchResult.renderNextCats : api로 랜덤고양이를 호출한 후, nextCats elements 생성 및 추가
+
+### 1. observerBottomOf
+
+arguments
+- element : 어떤 element를 감지할 것인지?
+- onBottom : element의 bottom에 도달할 경우 실행할 핸들러 함수 
+- options : observer 생성 시 전달되는 options
+  - root : 어떤 scrollView를 기준으로 관측하는지? (default : viewport=document)
+  - rootMargin : element의 bottom에서 얼마나 떨어진 곳을 관측할 것인지?
+
+[Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+
+
+```js
+// observeBottomOf.js
+export default function observeBottomOf(
+  element = document.body,
+  onBottom,
+  options = {}
+) {
+  const { root = document, rootMargin = '600px' } = options; // 후술
+
+  // 내용이 없는 div를 bottom을 탐지할 돔 요소(element)의 맨 아래에 append해두고 이 친구를 탐지함
+  const $observer = document.createElement('div'); 
+  element.append($observer);
+
+  // unobserve 제어권을 onBottom 핸들러를 실행하는 곳으로 넘겨주기 위해 unobserve 함수 생성 
+  const unobserve = () => {
+    observer.unobserve($observer)
+    $observer.remove(); 
+  };
+
+  // $observer를(element의 bottom에 위치한 div) 관측하게 될 경우, onBottom 실행
+  const cb = (entries) => {
+    const element = entries[0];
+
+    if (element.isIntersecting) {
+      onBottom(unobserve);
+    }
+  };
+
+  /*
+  cb과 options 
+     document(scrollView)에서 
+     관측 대상인 $observer(entry)가 조금이라도 보일 경우(threshold=0(default))
+     $observer를 isIntersecting으로 처리하고 cb 실행
+     이미지 요청 시간을 고려해 document(scrollview) 아래로 600px까지 여유를 두고 관측
+  */
+  let observer = new IntersectionObserver(cb, {
+    root,
+    rootMargin,
+  });
+
+  // $observer(빈 div) 관측
+  observer.observe($observer);
+}
+
+```
+
+### 2. SearchResult.renderNextCats
+
+- 2.1 createCatCardHTML
+
+기존의 `SearchResult.render`에서, 검색된 고양이 이미지를 `innerHTML`로 할당함.  
+재사용되는 catCard template이 있었고 이를 `createCatCardHTML`로 분리.  
+
+```js
+// SearchResult.js
+  createCatCardHTML = (cat) => `
+    <div class="item" id=${cat.id} data-name=${cat.name}>
+      <div class="img-wrapper lazy">
+        <img data-src=${cat.url} alt=${cat.name}  />
+        <div class="img-placeholder"></div>
+      </div>
+    </div>
+```
+
+2.2 renderNextCats
+
+무한 스크롤에서는 api 요청 시, 로딩 UI와 ErrorMessage를 보여주지 않는게 좋다고 생각해 기존의 tryFetchData를 일부 수정함.
+
+```js
+// SearchResult.js
+  async renderNextCats() {
+    const cats = await this.tryFetchData(api.getRandomCats, {
+      cb: ({ data }) => data,
+      showErrorMessage: false, // 에러/로딩 메세지를 보이지 않고 랜덤 고양이 정보를 불러옴
+      showLoading: false, 
+    });
+
+    if (!cats) { // 만약 데이터가 없다면 => api 요청 실패이므로 다시 renderNextCats 실행
+      this.renderNextCats();
+    }
+
+    /* 
+      기존에 렌더링된 컴포넌트에서 업데이트되는 부분을 추가렌더링하면 되는데 
+      innerHTML로 children을 할당할 경우 append까지 마쳐야 돔 요소가 생성됨
+      $nextCats를 만들어두고, childNodes를 this.$el로 옮기는 방법 사용    
+    */
+    const $nextCats = document.createElement('div');
+    $nextCats.innerHTML = cats.map(this.createCatCardHTML).join('');
+
+    // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
+    this.$el.append(...$nextCats.childNodes);
+
+    $nextCats.remove(); // children을 옮긴 후, 삭제
+  }
+```
+
+2.3 infiniteNextCats
+
+1. observeBottomOf를 이용해 `SearchResult.$el`의 아래에 `append`된 `$observer`를 `viewport`에서 관측하고 
+2. `$observer가` 관측될 경우 `renderNextCats`를 실행
+3. next cats가 돔 트리에 추가되면, `lazyLoad()`를 실행해주고
+4. `unobserve`를 통해 `$observer` 관측을 중지하고 이를 `remove`함
+5. 그리고 1.을 반복
+
+```js
+// SearchResult.js
+  infiniteNextCats = () => {
+    // 
+    observeBottomOf(this.$el, async (unobserve) => {
+      if (this.loading) {
+        return;
+      }
+      await this.renderNextCats();
+      lazyLoad();
+      unobserve();
+      this.infiniteNextCats();
+    });
+  };
+```
+
 # 2021.02.25
 
 ## 1. 컴포넌트 클래스 작성

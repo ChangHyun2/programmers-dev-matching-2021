@@ -3,6 +3,7 @@ import ImageInfo from './ImageInfo.js';
 import store from '../store.js';
 import api from '../api/api.js';
 import { lazyLoad, localStorage, TypeError } from '../utils/index.js';
+import observeBottomOf from '../utils/observeBottomOf.js';
 
 export default class SearchResult extends Component {
   constructor($parent) {
@@ -58,21 +59,56 @@ export default class SearchResult extends Component {
     catInfo && new ImageInfo(document.body, catInfo).render();
   };
 
+  createCatCardHTML = (cat) => `
+    <div class="item" id=${cat.id} data-name=${cat.name}>
+      <div class="img-wrapper lazy">
+        <img data-src=${cat.url} alt=${cat.name}  />
+        <div class="img-placeholder"></div>
+      </div>
+    </div>
+  `;
+
+  async renderNextCats() {
+    const cats = await this.tryFetchData(api.getRandomCats, {
+      cb: ({ data }) => data,
+      showErrorMessage: false,
+      showLoading: false,
+    });
+
+    if (!cats) {
+      this.renderNextCats();
+      return;
+    }
+
+    const $nextCats = document.createElement('div');
+    $nextCats.innerHTML = cats.map(this.createCatCardHTML).join('');
+
+    // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
+    this.$el.append(...$nextCats.childNodes);
+
+    $nextCats.remove();
+  }
+
+  infiniteNextCats = () => {
+    observeBottomOf(this.$el, async (unobserve) => {
+      if (this.loading) {
+        return;
+      }
+      await this.renderNextCats();
+      lazyLoad();
+      unobserve();
+      this.infiniteNextCats();
+    });
+  };
+
   render() {
     this.$el.innerHTML = store
       .get('search-result')
-      .map(
-        (cat) => `
-        <div class="item" id=${cat.id} data-name=${cat.name}>
-          <div class="img-wrapper lazy">
-            <img data-src=${cat.url} alt=${cat.name}  />
-            <div class="img-placeholder"></div>
-          </div>
-        </div>
-      `
-      )
+      .map(this.createCatCardHTML)
       .join('');
 
     lazyLoad();
+
+    this.infiniteNextCats();
   }
 }

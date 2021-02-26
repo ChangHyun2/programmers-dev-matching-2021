@@ -9,7 +9,12 @@ export default class Component extends BaseComponent {
     this.bindEvents();
   }
 
-  handleError(e, types, position) {
+  handleError({
+    e,
+    errorTypes: types,
+    showErrorMessage,
+    errorPosition: position,
+  }) {
     if (
       types &&
       types.length &&
@@ -21,10 +26,12 @@ export default class Component extends BaseComponent {
         console.warn(e);
       }
 
-      new ErrorMessage(e.message, {
-        status: e.status,
-        position: position,
-      });
+      if (showErrorMessage) {
+        new ErrorMessage(e.message, {
+          status: e.status,
+          position,
+        });
+      }
     } else {
       // 그 외의 코드 에러
       console.error(e);
@@ -45,7 +52,14 @@ export default class Component extends BaseComponent {
       options = args[1];
     }
 
-    const { cb, errorTypes, cache = true, errorPosition } = options || {};
+    const {
+      cb,
+      errorTypes,
+      cache = true,
+      errorPosition,
+      showErrorMessage = true,
+      showLoading = true,
+    } = options || {};
 
     // Check fetchCache. if cached, return cached data
     let funcStr;
@@ -62,7 +76,7 @@ export default class Component extends BaseComponent {
     if (this.isLoading) return;
 
     this.isLoading = true;
-    const loading = new Loading();
+    const loading = showLoading && new Loading();
 
     try {
       let data = await fetchData(query);
@@ -77,9 +91,9 @@ export default class Component extends BaseComponent {
 
       return data;
     } catch (e) {
-      this.handleError(e, errorTypes, errorPosition);
+      this.handleError({ e, errorTypes, showErrorMessage, errorPosition });
     } finally {
-      loading.$el.remove();
+      loading && loading.$el.remove();
       this.isLoading = false;
     }
   }
