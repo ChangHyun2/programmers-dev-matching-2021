@@ -1,58 +1,20 @@
-import TypeError from '../utils/TypeError.js';
 import Component from './Component.js';
 import ImageInfo from './ImageInfo.js';
 import store from '../store.js';
-import api from '../api.js';
-import { Loading, ErrorMessage } from '../UI/index.js';
-import localStorage from '../utils/localStorage.js';
-import lazyLoad from '../utils/lazyLoad.js';
+import api from '../api/api.js';
+import { lazyLoad, localStorage, TypeError } from '../utils/index.js';
 
 export default class SearchResult extends Component {
   constructor($parent) {
     super($parent, 'div', {
       className: 'SearchResult',
     });
-    this.isLoading;
 
     store.set('search-result', localStorage.get('cats-search-result') || []);
     store.subscribe('search-result', this);
 
     this.bindEvents();
   }
-
-  getCatInfo = async ($catCard) => {
-    if ($catCard.dataset.catInfo) {
-      return JSON.parse($catCard.dataset.catInfo);
-    }
-
-    try {
-      const { data } = await api.getCatById($catCard.dataset.id);
-
-      if (!Object.keys(data).length) {
-        throw new TypeError(
-          '선택하신 고양이 상세 정보를 불러올 수 없습니다.',
-          'data'
-        );
-      }
-
-      $catCard.dataset.catInfo = JSON.stringify(data);
-
-      const { id, url, name, temperament, origin } = data;
-      return { id, url, name, temperament, origin };
-    } catch (e) {
-      let message;
-
-      if (e.type === 'api' || e.type === 'data') {
-        console.warn(e);
-        message = e.message;
-      } else {
-        console.error(e);
-        message = `알 수 없는 에러가 발생했습니다. ${e.message}`;
-      }
-
-      new ErrorMessage($catCard, message, e.status);
-    }
-  };
 
   onMouseOver = (e) => {
     const item = e.target.closest('.item');
@@ -77,23 +39,25 @@ export default class SearchResult extends Component {
   };
 
   onClick = async (e) => {
-    if (this.isLoading) return;
-
     const $catCard = e.target.closest('.item');
     if (!$catCard) {
       return;
     }
 
-    this.isLoading = true;
-    const loading = new Loading();
+    const catInfo = await this.tryFetchData(() => api.getCatById($catCard.id), {
+      cache: `get-cat-by-id=${$catCard.id}`,
+      cb: ({ data }) => {
+        console.log(data);
+        if (!data) {
+          throw TypeError('클릭하신 고양이 정보를 불러올 수 없습니다.', 'data');
+        }
 
-    const catInfo = await this.getCatInfo($catCard);
-    if (catInfo) {
-      new ImageInfo(document.body, catInfo).render();
-    }
+        return data;
+      },
+      errorTypes: ['api', 'data'],
+    });
 
-    loading.$el.remove();
-    this.isLoading = false;
+    catInfo && new ImageInfo(document.body, catInfo).render();
   };
 
   render() {
@@ -101,7 +65,7 @@ export default class SearchResult extends Component {
       .get('search-result')
       .map(
         (cat) => `
-        <div class="item" data-id=${cat.id} data-name=${cat.name}>
+        <div class="item" id=${cat.id} data-name=${cat.name}>
           <div class="img-wrapper lazy">
             <img data-src=${cat.url} alt=${cat.name}  />
             <div class="img-placeholder"></div>

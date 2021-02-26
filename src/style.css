@@ -244,9 +244,10 @@ body[data-theme='dark'] {
 }
 
 .ErrorMessage {
-  color: red;
+  color: white;
   font-weight: bold;
-  background-color: #000;
+  font-size: 18px;
+  background-color: red;
   box-shadow: 0 0 3px #aaa;
   transition: opacity 0.3s;
 }

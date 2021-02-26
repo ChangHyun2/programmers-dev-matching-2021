@@ -1,6 +1,5 @@
 import Component from '../Component.js';
 import store from '../../store.js';
-import localStorage from '../../utils/localStorage.js';
 
 export default class SearchHistory extends Component {
   constructor($parent) {

@@ -1,7 +1,5 @@
-import ApiError from './utils/ApiError.js';
+import ApiError from '../utils/ApiError.js';
 
-const API_ENDPOINT =
-  'https://oivhcpn8r9.execute-api.ap-northeast-2.amazonaws.com/dev';
 const STATUS_ERROR_MESSAGE =
   '서버가 원활하지 않습니다. 잠시 후 다시 시도해주세요';
 
@@ -48,13 +46,4 @@ const fetchData = async (url, name) => {
   }
 };
 
-const api = {
-  getCats: (keyword) =>
-    fetchData(`${API_ENDPOINT}/api/cats/search?q=${keyword}`, 'get cats'),
-  getCatById: (id) =>
-    fetchData(`${API_ENDPOINT}/api/cats/${id}`, 'get catById'),
-  getRandomCats: () =>
-    fetchData(`${API_ENDPOINT}/api/cats/random50`, 'get randomCats'),
-};
-
-export default api;
+export default fetchData;

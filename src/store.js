@@ -1,25 +1,39 @@
-const store = {
-  subscribe: (context, ref) => {
-    store[context].refs.push(ref);
-  },
-  get: (context) => {
-    return store[context].data;
-  },
-  set: (context, data) => {
-    const initialSet = !store[context];
+class Store {
+  constructor() {
+    this.store = {};
+  }
 
-    if (initialSet) {
-      store[context] = {
+  subscribe(context, element) {
+    this.store[context].elements.push(element);
+  }
+
+  get(context) {
+    return this.store[context].data;
+  }
+
+  has(context) {
+    return this.store[context];
+  }
+
+  set(context, data) {
+    if (!this.has(context)) {
+      this.store[context] = {
         data: data,
-        refs: [],
+        elements: [],
       };
-      return;
+
+      return this.store[context];
     }
 
-    console.log('new data', data);
-    store[context].data = data;
-    store[context].refs.forEach((ref) => ref.render());
-  },
-};
+    this.store[context].data = data;
 
+    this.publish(context);
+  }
+
+  publish(context) {
+    this.store[context].elements.forEach((element) => element.render());
+  }
+}
+
+const store = new Store();
 export default store;

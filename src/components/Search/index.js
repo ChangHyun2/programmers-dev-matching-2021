@@ -1,8 +1,6 @@
 import Component from '../Component.js';
-import localStorage from '../../utils/localStorage.js';
 import SearchInput from './SearchInput.js';
 import RandomSearchButton from './RandomSearchButton.js';
-import api from '../../api.js';
 import SearchHistory from './SearchHistory.js';
 
 export default class Search extends Component {

@@ -1,12 +1,10 @@
 import Component from './Component.js';
-import api from '../api.js';
-import { ErrorMessage, Loading } from '../UI/index.js';
 
 export default class ImageInfo extends Component {
   constructor($parent, data) {
     super($parent, 'div', {
       className: 'ImageInfo',
-      tabindex: 0,
+      tabIndex: 0,
     });
     this.data = data;
 
@@ -28,6 +26,7 @@ export default class ImageInfo extends Component {
       this.removeWithFadeOut();
     }
   };
+
   onKeyDown = (e) => {
     e.key === 'Escape' && this.removeWithFadeOut();
   };

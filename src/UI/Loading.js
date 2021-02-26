@@ -1,6 +1,5 @@
-import Component from '../components/Component.js';
-
-export default class Loading extends Component {
+import BaseComponent from '../components/BaseComponent.js';
+export default class Loading extends BaseComponent {
   constructor() {
     super(document.body, 'div', {
       classname: 'loading',
