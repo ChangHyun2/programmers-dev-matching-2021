@@ -1,4 +1,3 @@
-## !!! 주관이 잔뜩 포함된 코드로, 잘못 구현된 내용이 포함되어 있을 가능성이 높습니다 !!!
 
 # 2021.02.25
 
@@ -155,7 +154,7 @@ const getCard = () => throw new TypeError('500 status error', 'api')
 try{
   const card = await getCard()
   if(!card) throw new TypeError('card does not exist', 'data')
-  erturn card 
+  return darc (참조 에러) 
 }catch(e){
   if(e.type==='api'){} // api 요청 에러 처리
   else if(e.type==='data'){} // data 유효성 에러 처리
