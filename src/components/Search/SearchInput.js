@@ -14,8 +14,7 @@ export default class SearchInput extends Component {
   }
 
   updateSearchResult = async (keyword) => {
-    const cats = await this.tryFetchData(() => api.getCats(keyword), {
-      cache: `get-cats=${keyword}`,
+    const cats = await this.tryFetchData(api.getCats, keyword, {
       cb: ({ data }) => {
         if (!data.length) {
           throw new TypeError(

@@ -3,29 +3,29 @@ class FetchCache {
     this.cache = {};
   }
 
-  has(context, funcStr) {
-    return !!this.cache[context] && this.cache[context].hasOwnProperty(funcStr);
+  has(context, key) {
+    return !!this.cache[context] && this.cache[context].hasOwnProperty(key);
   }
 
-  set(context, funcStr, data) {
+  set(context, key, value) {
     if (this.cache[context]) {
-      this.cache[context][funcStr] = data;
+      this.cache[context][key] = value;
 
       return this.cache[context];
     }
 
     this.cache[context] = {
-      [funcStr]: data,
+      [key]: value,
     };
 
     return this.cache[context];
   }
 
-  get(context, funcStr) {
-    if (!this.cache[context].hasOwnProperty(funcStr))
-      throw new Error('set context and function in fetchCache before get data');
+  get(context, key) {
+    if (!this.cache[context].hasOwnProperty(key))
+      throw new Error('set context and key in fetchCache before get value');
 
-    return this.cache[context][funcStr];
+    return this.cache[context][key];
   }
 }
 

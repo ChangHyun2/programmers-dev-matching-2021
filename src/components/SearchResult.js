@@ -44,10 +44,8 @@ export default class SearchResult extends Component {
       return;
     }
 
-    const catInfo = await this.tryFetchData(() => api.getCatById($catCard.id), {
-      cache: `get-cat-by-id=${$catCard.id}`,
+    const catInfo = await this.tryFetchData(api.getCatById, $catCard.id, {
       cb: ({ data }) => {
-        console.log(data);
         if (!data) {
           throw TypeError('클릭하신 고양이 정보를 불러올 수 없습니다.', 'data');
         }

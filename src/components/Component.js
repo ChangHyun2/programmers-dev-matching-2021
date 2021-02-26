@@ -32,17 +32,29 @@ export default class Component extends BaseComponent {
     }
   }
 
-  async tryFetchData(fetchData, { cb, errorTypes, cache, errorPosition }) {
+  async tryFetchData(...args) {
+    const fetchData = args[0];
+    let query;
+    let options;
+
+    if (args.length === 3) {
+      [query, options] = args.slice(1);
+    }
+
+    if (args.length === 2) {
+      options = args[1];
+    }
+
+    const { cb, errorTypes, cache = true, errorPosition } = options || {};
+
     // Check fetchCache. if cached, return cached data
     let funcStr;
 
     if (cache) {
       funcStr = fetchData.toString();
-      console.log(cache, funcStr);
-      console.log(fetchCache);
 
-      if (fetchCache.has(cache, funcStr)) {
-        return fetchCache.get(cache, funcStr);
+      if (fetchCache.has(funcStr, query)) {
+        return fetchCache.get(funcStr, query);
       }
     }
 
@@ -53,15 +65,14 @@ export default class Component extends BaseComponent {
     const loading = new Loading();
 
     try {
-      let data = await fetchData();
-      console.log(data);
+      let data = await fetchData(query);
+
       if (cb) {
         data = cb(data);
       }
-      console.log(data);
 
       if (cache) {
-        fetchCache.set(cache, funcStr, data);
+        fetchCache.set(funcStr, query, data);
       }
 
       return data;

@@ -13,7 +13,8 @@ export default class RandomSearchButton extends Component {
   }
 
   updateSearchResult = async () => {
-    const data = await this.tryFetchData(() => api.getRandomCats(), {
+    const data = await this.tryFetchData(api.getRandomCats, {
+      cache: false,
       cb: ({ data }) => data,
       errorTypes: ['api'],
     });

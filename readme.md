@@ -1,4 +1,166 @@
 
+# 2021 02.26
+
+## api 요청 캐싱 및 에러 처리 쉽게 하기
+
+### fetchCache
+
+같은 주소의 데이터를 요청할 경우 반복해서 서버로 데이터를 요청할 필요가 없다.
+react-query를 사용해보진 못했지만 유사하게 구현해봄  
+
+데이터 요청 시, 요청함수/요첨함수인자/결과값을 캐싱하고 이미 요청한 주소일 경우 캐싱해둔 값을 리턴
+```js
+  /*
+    context : apiFunc.toString()
+    key : query ( 요청함수 인자 :  ex) apiFunc(query) )
+    value : res.json()
+  */
+
+  // 아래 형식으로 캐싱된다.
+  const fetchCache = {
+    apiFunc:{ 
+      query: data 
+    }
+  }
+```
+
+현재 문제점 : data가 null일 경우 대응하지 못 함
+
+### tryFetchData
+
+api요청/캐싱/에러핸들링 코드가 반복돼 이를 줄이기 위해 컴포넌트 메소드로 작성  
+
+**예시 1**
+
+1. 버튼 클릭 시 
+2. api.getRandomCats 요청
+3. 요청 결과 데이터를 가공한 후
+4. 가공된 데이터를 store에 'search-result'로 저장
+5. store가 업데이트되어 SearchResult.js 컴포넌트 리렌더링 발생
+
+랜덤으로 고양이 데이터를 불러오므로 **예시 1**은 데이터를 캐싱하지 않는다.
+
+**tryFetchData 적용 전**
+
+```js
+
+// RandomSearchButton.js
+  updateSearchResult = async () => {
+    this.loading = true;
+    const loading = new Loading();
+
+    try {
+      const { data } = await api.getRandomCats();
+
+      store.set('search-result', data);
+      localStorage.set('cats-search-result', data);
+    } catch (e) {
+      let message;
+
+      if (e.type === 'api') {
+        message = e.message;
+      } else {
+        message = `알 수 없는 에러가 발생했습니다 : ${e.message}`;
+        console.error(e);
+      }
+
+      new ErrorMessage(this.$el, message, e.status);
+    } finally {
+      loading.$el.remove();
+      this.$el.disabled = false;
+    }
+  };
+
+  onClick = async () => {
+    this.$el.disabled = true;
+    this.updateSearchResult();
+    this.$el.disabled = false;
+  };
+
+```
+
+**tryFetchData 적용 후**
+
+```js
+// RandomSearchButton.js
+  updateSearchResult = async () => {
+    const data = await this.tryFetchData(api.getRandomCats, { // api요청 함수 전달
+      cache : false, // 캐싱하지 않음
+      cb: ({ data }) => data, // data 가공 callback
+      errorTypes: ['api'], // api요청 시 발생하는 TypeError
+    });
+
+    if (data) { // data 반드시 확인
+      store.set('search-result', data);
+      localStorage.set('cats-search-result', data);
+    }
+  };
+
+  onClick = async () => {
+    this.$el.disabled = true;
+    this.updateSearchResult();
+    this.$el.disabled = false;
+  };
+```
+
+**예시 2**
+
+1. 엔터 키 입력 시 
+2. api.getCats(keyword) 요청 (fetchCache에 캐싱된 데이터라면 바로 결과값 리턴)
+3. 데이터 가공 및 에러 처리를 마치고
+4. 가공된 데이터를 fetchCache에 캐싱
+5. store에 'search-result'로 저장
+6. store가 업데이트되어 SearchResult.js 컴포넌트 리렌더링 발생
+  
+```js
+  // SearchInput.js
+  updateSearchResult = async (keyword) => {
+    const cats = await this.tryFetchData(api.getCats, keyword, {
+      cb: ({ data }) => {
+        if (!data.length) { // 사용자가 검색한 고양이 데이터가 서버에 없을 경우
+          throw new TypeError(
+            '검색하신 고양이 이미지가 존재하지 않습니다. 다른 고양이를 검색해주세요',
+            'data'
+          );
+        }
+
+        return data;
+      },
+      errorTypes: ['api', 'data'],
+    });
+
+    if (cats) {
+      store.set('search-result', cats);
+      localStorage.set('cats-search-result', cats);
+    }
+  };
+  
+
+  onKeyUp = (e) => {
+    const keyword = e.target.value;
+
+    if (e.keyCode === 13) {
+      // this.updateSearchHistory(keyword);
+      this.updateSearchResult(keyword);
+    }
+  };
+```
+
+## 코드 리펙토링
+
+1. fetchData.js / api.js 분리
+   - fetchData : api요청 함수를 정의하기 위한 비동기함수로, 데이터를 요청하고 에러가 발생할 경우 ApiError를 throw한다.
+   - api : fetchData를 이용해 api 요청 함수를 작성한다.  
+
+2. BaseComponent.js / Component.js 분리  
+   Component에서 api 요청 함수를 실행하고 에러를 핸들링해주는 tryFetchData 함수를 작성하고보니.. ErrorMessage에서 Component를 상속해서 BaseComponent와 Component로 분리   
+   - BaseComponent : DOM element를 생성하고 이벤트 핸들러를 등록한다.
+   - Component
+     - `async tryFetchData` : api.js에서 작성한 api 요청 함수를 실행하고 에러를 처리한다.
+     - `handleError` : `tryFetchData`에서 사용되는 helper로 에러 발생 시 에러의 타입에 따라 에러 메세지를 띄운다. 
+
+3. util , UI는 index.js에서 export하도록 수정
+
 # 2021.02.25
 
 ## 컴포넌트 클래스 작성
