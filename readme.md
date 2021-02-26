@@ -1,7 +1,7 @@
 
 # 2021 02.26
 
-## api 요청 캐싱 및 에러 처리 쉽게 하기
+## 1. api 요청 캐싱 및 에러 처리 쉽게 하기
 
 ### fetchCache
 
@@ -146,7 +146,7 @@ api요청/캐싱/에러핸들링 코드가 반복돼 이를 줄이기 위해 컴
   };
 ```
 
-## 코드 리펙토링
+## 2. 코드 리펙토링
 
 1. fetchData.js / api.js 분리
    - fetchData : api요청 함수를 정의하기 위한 비동기함수로, 데이터를 요청하고 에러가 발생할 경우 ApiError를 throw한다.
@@ -163,7 +163,7 @@ api요청/캐싱/에러핸들링 코드가 반복돼 이를 줄이기 위해 컴
 
 # 2021.02.25
 
-## 컴포넌트 클래스 작성
+## 1. 컴포넌트 클래스 작성
 
 인자 정보
 1. target : 부모 element
@@ -255,7 +255,7 @@ const $button = new Button(document.body);
 $button.render();
 ```
 
-## 에러 핸들링
+## 2. 에러 핸들링
 
 **에러의 종류**
 
@@ -358,7 +358,7 @@ try{
 
 ```
 
-## console.error와 console.warn 분리하기
+## 3. console.error와 console.warn 분리하기
 
 console.warn : 코드에 문제가 없는 loose한 에러
 - api 상태 에러
@@ -390,7 +390,7 @@ catch (e) {
 }
 ```
 
-## API 호출 함수 에러 핸들링
+## 4. API 호출 함수 에러 핸들링
 
 ```js
 import ApiError from './utils/ApiError.js';
@@ -457,7 +457,7 @@ export default api;
 
 ```
 
-## 컴포넌트 데이터 요청 함수 에러 핸들링
+## 5. 컴포넌트 데이터 요청 함수 에러 핸들링
 
 **api 호출 함수로부터 전달 받는 에러 형식**
 1. ApiError => (상태 코드에 의한 throw된 에러)
