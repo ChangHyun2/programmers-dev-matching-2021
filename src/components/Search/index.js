@@ -15,8 +15,8 @@ export default class Search extends Component {
       `,
     });
 
-    const $searchCats = this.$el.querySelector('.Search-cats');
-    const $searchHistory = this.$el.querySelector('.Search-history');
+    const $searchCats = this.$.querySelector('.Search-cats');
+    const $searchHistory = this.$.querySelector('.Search-history');
 
     this.children = [
       new SearchInput($searchCats),

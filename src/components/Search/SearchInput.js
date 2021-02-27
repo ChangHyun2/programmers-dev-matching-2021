@@ -1,7 +1,6 @@
 import { TypeError, localStorage } from '../../utils/index.js';
 import Component from '../Component.js';
 import api from '../../api/api.js';
-import store from '../../store.js';
 
 export default class SearchInput extends Component {
   constructor($parent) {
@@ -9,7 +8,6 @@ export default class SearchInput extends Component {
       placeholder: '고양이를 검색해보세요',
       className: 'SearchInput',
     });
-
     this.bindEvents();
   }
 
@@ -29,17 +27,16 @@ export default class SearchInput extends Component {
     });
 
     if (cats) {
-      store.set('search-result', cats);
-      localStorage.set('cats-search-result', cats);
+      this.set(cats).on('search-result', ['local', 'web']);
     }
   };
 
   updateSearchHistory = (keyword) => {
-    const searchHistory = store.get('search-history');
+    const searchHistory = this.get('search-history', 'local');
 
-    if (searchHistory.length === 5) searchHistory.shift();
+    searchHistory.length === 5 && searchHistory.shift();
 
-    store.set('search-history', [...searchHistory, keyword]);
+    this.set([...searchHistory, keyword]).on('search-history', 'local');
   };
 
   onKeyUp = (e) => {
@@ -52,6 +49,6 @@ export default class SearchInput extends Component {
   };
 
   onClick = (e) => {
-    this.$el.value = '';
+    this.$.value = '';
   };
 }

@@ -1,5 +1,4 @@
 import Component from '../Component.js';
-import store from '../../store.js';
 
 export default class SearchHistory extends Component {
   constructor($parent) {
@@ -7,14 +6,15 @@ export default class SearchHistory extends Component {
       className: 'SearchHistory',
     });
 
-    store.set('search-history', []);
-    store.subscribe('search-history', this);
+    this.set([]).on('search-history', 'local');
+    this.subscribe('search-history');
   }
 
   render() {
-    this.$el.innerHTML = store
-      .get('search-history')
-      .map((searched) => `<li>${searched}</li>`)
-      .join('');
+    this.HTML(
+      this.get('search-history', 'local')
+        .map((searched) => `<li>${searched}</li>`)
+        .join('')
+    );
   }
 }

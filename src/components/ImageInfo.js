@@ -6,15 +6,15 @@ export default class ImageInfo extends Component {
       className: 'ImageInfo',
       tabIndex: 0,
     });
-    this.data = data;
 
+    this.data = data;
     this.bindEvents();
   }
 
   removeWithFadeOut = () => {
-    this.$el.classList.remove('fade-in');
-    this.$el.classList.add('fade-out');
-    this.$el.ontransitionend = () => this.$el.remove();
+    this.$.classList.remove('fade-in');
+    this.$.classList.add('fade-out');
+    this.$.ontransitionend = () => this.$.remove();
   };
 
   onClick = (e) => {
@@ -34,22 +34,22 @@ export default class ImageInfo extends Component {
   render = () => {
     const { url, name, temperament, origin } = this.data;
 
-    this.$el.innerHTML = `
+    this.HTML(`
     <div class="content-wrapper">
-    <div class="title">
-    <span>${name}</span>
-    <div class="close">x</div>
-    </div>
-    <div class="img-wrapper">
-    <img src="${url}" alt="${name}"/>        
-    </div>
-    <div class="description">
-    <div>성격: ${temperament}</div>
-    <div>태생: ${origin}</div>
-    </div>
-    </div>`;
+      <div class="title">
+        <span>${name}</span>
+        <div class="close">x</div>
+      </div>
+      <div class="img-wrapper">
+        <img src="${url}" alt="${name}"/>        
+      </div>
+      <div class="description">
+        <div>성격: ${temperament}</div>
+        <div>태생: ${origin}</div>
+      </div>
+    </div>`);
 
-    this.$el.focus();
-    this.$el.classList.add('fade-in');
+    this.$.focus();
+    this.$.classList.add('fade-in');
   };
 }

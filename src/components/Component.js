@@ -1,12 +1,31 @@
 import BaseComponent from './BaseComponent.js';
 import fetchCache from '../fetchCache.js';
 import { Loading, ErrorMessage, CriticalErrorMessage } from '../UI/index.js';
+import store from '../store.js';
+import { localStorage } from '../utils/index.js';
+
+const setData = (data, context, type) => {
+  switch (type) {
+    case 'local':
+      store.set(context, data);
+      break;
+    case 'web':
+      localStorage.set('dev-matching-' + context, data);
+  }
+};
+
+const getData = (context, storeType) => {
+  switch (storeType) {
+    case 'local':
+      return store.get(context);
+    case 'web':
+      return localStorage.get('dev-matching-' + context);
+  }
+};
 
 export default class Component extends BaseComponent {
   constructor(parent, tag, attributes) {
     super(parent, tag, attributes);
-
-    this.bindEvents();
   }
 
   handleError({
@@ -20,7 +39,6 @@ export default class Component extends BaseComponent {
       types.length &&
       types.some((type) => type === e.type) // ApiError는 api.js에서 로깅
     ) {
-      console.log('hi');
       // TypeError일 경우
       if (e.type !== 'api') {
         console.warn(e);
@@ -93,8 +111,31 @@ export default class Component extends BaseComponent {
     } catch (e) {
       this.handleError({ e, errorTypes, showErrorMessage, errorPosition });
     } finally {
-      loading && loading.$el.remove();
+      loading && loading.$.remove();
       this.isLoading = false;
     }
   }
+
+  get(context, storeType) {
+    return getData(context, storeType);
+  }
+
+  set(data) {
+    return {
+      on: (context, storeTypes) => {
+        if (typeof storeTypes === 'string') {
+          setData(data, context, storeTypes);
+          return;
+        }
+
+        if (Array.isArray(storeTypes)) {
+          storeTypes.forEach((storeType) => setData(data, context, storeType));
+        }
+      },
+    };
+  }
+
+  subscribe = (context) => {
+    store.subscribe(context, this);
+  };
 }

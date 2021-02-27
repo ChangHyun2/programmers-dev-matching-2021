@@ -8,21 +8,21 @@ export default class BaseComponent {
       this.$parent = target;
     }
 
-    const $el = document.createElement(tag);
+    const $ = document.createElement(tag);
     Object.entries(attributes).forEach(([fieldName, fieldValue]) => {
       if (fieldName === 'styles') {
         return Object.entries(fieldValue).forEach(([fieldName, fieldValue]) => {
-          $el.style[fieldName] = fieldValue;
+          $.style[fieldName] = fieldValue;
         });
       }
 
-      $el[fieldName] = fieldValue;
+      $[fieldName] = fieldValue;
     });
-    this.$el = $el;
+    this.$ = $;
 
     insertPosition
-      ? this.$parent.insertAdjacentElement(insertPosition, this.$el)
-      : this.$parent.append(this.$el);
+      ? this.$parent.insertAdjacentElement(insertPosition, this.$)
+      : this.$parent.append(this.$);
   }
 
   bindEvents() {
@@ -33,7 +33,19 @@ export default class BaseComponent {
 
       const eventType = fieldName.slice(2).toLowerCase();
 
-      this.$el.addEventListener(eventType, fieldValue);
+      this.$.addEventListener(eventType, fieldValue);
     });
+  }
+
+  // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
+  HTML(template) {
+    this.$.innerHTML = template;
+  }
+
+  addHTML(template) {
+    const $temp = document.createElement('div');
+    $temp.innerHTML = template;
+
+    this.$.append(...$temp.childNodes);
   }
 }

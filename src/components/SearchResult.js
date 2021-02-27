@@ -11,8 +11,9 @@ export default class SearchResult extends Component {
       className: 'SearchResult',
     });
 
-    store.set('search-result', localStorage.get('cats-search-result') || []);
-    store.subscribe('search-result', this);
+    const initialData = this.get('search-result', 'web') || [];
+    this.set(initialData).on('search-result', ['local', 'web']);
+    this.subscribe('search-result');
 
     this.bindEvents();
   }
@@ -73,6 +74,7 @@ export default class SearchResult extends Component {
       cb: ({ data }) => data,
       showErrorMessage: false,
       showLoading: false,
+      errorTypes: ['api'],
     });
 
     if (!cats) {
@@ -80,17 +82,11 @@ export default class SearchResult extends Component {
       return;
     }
 
-    const $nextCats = document.createElement('div');
-    $nextCats.innerHTML = cats.map(this.createCatCardHTML).join('');
-
-    // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
-    this.$el.append(...$nextCats.childNodes);
-
-    $nextCats.remove();
+    this.addHTML(cats.map(this.createCatCardHTML).join(''));
   }
 
   infiniteNextCats = () => {
-    observeBottomOf(this.$el, async (unobserve) => {
+    observeBottomOf(this.$, async (unobserve) => {
       if (this.loading) {
         return;
       }
@@ -102,10 +98,7 @@ export default class SearchResult extends Component {
   };
 
   render() {
-    this.$el.innerHTML = store
-      .get('search-result')
-      .map(this.createCatCardHTML)
-      .join('');
+    this.HTML(store.get('search-result').map(this.createCatCardHTML).join(''));
 
     lazyLoad();
 

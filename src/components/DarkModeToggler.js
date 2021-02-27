@@ -5,7 +5,6 @@ export default class DarkModeToggler extends Component {
     super($parent, 'button', {
       textContent: 'toggle theme',
     });
-
     this.bindEvents();
   }
 
