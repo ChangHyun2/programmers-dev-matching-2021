@@ -24,6 +24,6 @@ export default class CriticalErrorMessage extends BaseComponent {
   }
 
   onClick = () => {
-    this.$el.remove();
+    this.$.remove();
   };
 }

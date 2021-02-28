@@ -24,16 +24,16 @@ export default class ErrorMessage extends BaseComponent {
 
       const { bottom, left } = $parent.getBoundingClientRect();
 
-      this.$el.style.left = `${left + x}px`;
-      this.$el.style.top = `${bottom + y}px`;
+      this.$.style.left = `${left + x}px`;
+      this.$.style.top = `${bottom + y}px`;
     }
 
-    this.$el.classList.add('fade-in');
+    this.$.classList.add('fade-in');
 
     setTimeout(() => {
-      this.$el.classList.remove('fade-in');
-      this.$el.classList.add('fade-out');
-      this.$el.ontransitionend = () => this.$el.remove();
+      this.$.classList.remove('fade-in');
+      this.$.classList.add('fade-out');
+      this.$.ontransitionend = () => this.$.remove();
     }, DURATION);
   }
 }

@@ -38,14 +38,24 @@ export default class BaseComponent {
   }
 
   // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
-  HTML(template) {
-    this.$.innerHTML = template;
+  HTML($target, template) {
+    if (!template) {
+      template = $target;
+      $target = this.$;
+    }
+
+    $target.innerHTML = template;
   }
 
-  addHTML(template) {
+  addHTML($target, template) {
+    if (!template) {
+      template = $target;
+      $target = this.$;
+    }
+
     const $temp = document.createElement('div');
     $temp.innerHTML = template;
 
-    this.$.append(...$temp.childNodes);
+    $target.append(...$temp.childNodes);
   }
 }

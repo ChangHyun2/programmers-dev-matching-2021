@@ -57,17 +57,9 @@ export default class Component extends BaseComponent {
     }
   }
 
-  async tryFetchData(...args) {
-    const fetchData = args[0];
-    let query;
-    let options;
-
-    if (args.length === 3) {
-      [query, options] = args.slice(1);
-    }
-
-    if (args.length === 2) {
-      options = args[1];
+  async tryFetchData(fetchData, query, options) {
+    if (!options) {
+      options = query;
     }
 
     const {
