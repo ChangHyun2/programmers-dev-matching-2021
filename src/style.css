@@ -190,8 +190,10 @@ body[data-theme='dark'] {
 }
 
 .Carousel-slides {
-  width: 100%;
   display: flex;
+  padding: 0;
+  margin: 0;
+  width: 100%;
 }
 .Carousel-slide {
   display: block;

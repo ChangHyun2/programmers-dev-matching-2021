@@ -1,3 +1,17 @@
+export const loadImage = ($wrapper) => {
+  $wrapper.classList.remove('lazy');
+
+  const lazyImage = $wrapper.querySelector('img');
+
+  const placeholder = $wrapper.querySelector('.img-placeholder');
+
+  lazyImage.src = lazyImage.dataset.src;
+  lazyImage.onload = () => {
+    placeholder.classList.add('fade-out');
+    placeholder.ontransitionend = () => placeholder.remove();
+  };
+};
+
 export default function lazyLoad(options = {}) {
   const { root = document, rootMargin = '500px', threshold = 0 } = options;
 
@@ -10,19 +24,10 @@ export default function lazyLoad(options = {}) {
       (entries) =>
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const wrapper = entry.target;
-            wrapper.classList.remove('lazy');
+            const $wrapper = entry.target;
+            loadImage($wrapper);
 
-            const lazyImage = wrapper.querySelector('img');
-
-            const placeholder = wrapper.querySelector('.img-placeholder');
-
-            lazyImage.src = lazyImage.dataset.src;
-            lazyImage.onload = () => {
-              placeholder.classList.add('fade-out');
-              placeholder.ontransitionend = () => placeholder.remove();
-            };
-            lazyImageObserver.unobserve(wrapper);
+            lazyImageObserver.unobserve($wrapper);
           }
         }),
       {

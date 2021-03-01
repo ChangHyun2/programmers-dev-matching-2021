@@ -29,7 +29,7 @@ export default class BaseComponent {
     // field를 돌면서 핸들러 네이밍일 경우 this를 바인딩하고 event listen.
 
     Object.entries(this).forEach(([fieldName, fieldValue]) => {
-      if (fieldName.indexOf('on') === -1) return;
+      if (fieldName.indexOf('on') !== 0) return;
 
       const eventType = fieldName.slice(2).toLowerCase();
 
