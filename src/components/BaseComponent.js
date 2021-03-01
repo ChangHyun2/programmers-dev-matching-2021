@@ -1,4 +1,11 @@
 export default class BaseComponent {
+  $parent;
+  $;
+
+  bindEvents() {}
+  HTML() {}
+  addHTML() {}
+
   constructor(target, tag, attributes) {
     let insertPosition;
 
@@ -38,24 +45,24 @@ export default class BaseComponent {
   }
 
   // https://stackoverflow.com/questions/20910147/how-to-move-all-html-element-children-to-another-parent-using-javascript
-  HTML($target, template) {
+  HTML($parent, template) {
     if (!template) {
-      template = $target;
-      $target = this.$;
+      template = $parent;
+      $parent = this.$;
     }
 
-    $target.innerHTML = template;
+    $parent.innerHTML = template;
   }
 
-  addHTML($target, template) {
+  addHTML($parent, template) {
     if (!template) {
-      template = $target;
-      $target = this.$;
+      template = $parent;
+      $parent = this.$;
     }
 
     const $temp = document.createElement('div');
     $temp.innerHTML = template;
 
-    $target.append(...$temp.childNodes);
+    $parent.append(...$temp.childNodes);
   }
 }

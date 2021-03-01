@@ -12,7 +12,7 @@ class Store {
   }
 
   has(context) {
-    return this.store[context];
+    return !!this.store[context];
   }
 
   set(context, data) {

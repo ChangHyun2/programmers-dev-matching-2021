@@ -24,8 +24,16 @@ const getData = (context, storeType) => {
 };
 
 export default class Component extends BaseComponent {
-  constructor(parent, tag, attributes) {
-    super(parent, tag, attributes);
+  isLoading;
+
+  handleError() {}
+  tryFetchData() {}
+  get() {}
+  set() {}
+  subscribe() {}
+
+  constructor(target, tag, attributes) {
+    super(target, tag, attributes);
   }
 
   handleError({
