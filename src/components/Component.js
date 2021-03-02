@@ -61,7 +61,10 @@ export default class Component extends BaseComponent {
     } else {
       // 그 외의 코드 에러
       console.error(e);
-      new CriticalErrorMessage(e.message);
+      new CriticalErrorMessage(`
+        ${e.message}
+        ${e.stack}
+      `);
     }
   }
 

@@ -16,15 +16,19 @@ export default class BaseComponent {
     }
 
     const $ = document.createElement(tag);
-    Object.entries(attributes).forEach(([fieldName, fieldValue]) => {
-      if (fieldName === 'styles') {
-        return Object.entries(fieldValue).forEach(([fieldName, fieldValue]) => {
-          $.style[fieldName] = fieldValue;
-        });
-      }
+    attributes &&
+      Object.entries(attributes).forEach(([fieldName, fieldValue]) => {
+        if (fieldName === 'styles') {
+          return Object.entries(fieldValue).forEach(
+            ([fieldName, fieldValue]) => {
+              $.style[fieldName] = fieldValue;
+            }
+          );
+        }
 
-      $[fieldName] = fieldValue;
-    });
+        $[fieldName] = fieldValue;
+      });
+
     this.$ = $;
 
     insertPosition

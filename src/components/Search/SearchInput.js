@@ -6,7 +6,7 @@ export default class SearchInput extends Component {
   constructor($parent) {
     super($parent, 'input', {
       placeholder: '고양이를 검색해보세요',
-      className: 'SearchInput',
+      className: 'btn',
     });
     this.bindEvents();
   }

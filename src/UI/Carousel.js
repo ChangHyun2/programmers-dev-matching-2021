@@ -13,10 +13,10 @@ export default class Carousel extends Component {
         position: 'relative',
       },
       innerHTML: `
-          <button class="Carousel-left-arrow"> < </button>
+          <button class="Carousel-left-arrow btn"> < </button>
           <ul class="Carousel-slides">
           </ul>
-          <button class="Carousel-right-arrow"> > </button>
+          <button class="Carousel-right-arrow btn"> > </button>
       `,
     });
 
@@ -26,6 +26,7 @@ export default class Carousel extends Component {
     this.interval = autoPlay;
     this.duration = duration;
     this.slidesTemplate = slidesTemplate;
+    this.initialWindowSize = windowSlideSize;
     this.windowSlideSize = windowSlideSize;
     this.slideWidth = 100 / this.windowSlideSize.toFixed(4) + '%';
 
@@ -111,12 +112,12 @@ export default class Carousel extends Component {
     }
 
     switch (e.target.className) {
-      case 'Carousel-left-arrow':
+      case 'Carousel-left-arrow btn':
         this.direction = 'prev';
         this.prevSlide();
         break;
 
-      case 'Carousel-right-arrow':
+      case 'Carousel-right-arrow btn':
         this.direction = 'next';
         this.nextSlide();
     }
@@ -126,7 +127,49 @@ export default class Carousel extends Component {
     }
   };
 
+  adaptTo(type) {
+    let buttonDisplay;
+    let windowSlideSize;
+
+    switch (type) {
+      case 'mobile':
+        buttonDisplay = 'none';
+        windowSlideSize = 2;
+        break;
+      case 'overMobile':
+        buttonDisplay = 'block';
+        windowSlideSize = this.initialWindowSize;
+        break;
+      default:
+        throw new Error(
+          'you can adapt to device only with mobile and overMobile type'
+        );
+    }
+
+    this.windowSlideSize = windowSlideSize;
+    this.slideWidth = 100 / this.windowSlideSize.toFixed(4) + '%';
+
+    this.$.querySelectorAll('button').forEach(
+      ($btn) => ($btn.style.display = buttonDisplay)
+    );
+
+    this.$.querySelectorAll('.Carousel-slide').forEach(($slide) => {
+      $slide.style.width = this.slideWidth;
+      $slide.style.height = '200px';
+    });
+  }
+
   handleWindowResize = () => {
+    if (window.matchMedia('(max-width:576px)').matches && !this.isMobile) {
+      this.adaptTo('mobile');
+      this.isMobile = true;
+    }
+
+    if (window.matchMedia('(min-width:577px)').matches && this.isMobile) {
+      this.adaptTo('overMobile');
+      this.isMobile = false;
+    }
+
     this.transitionOff();
     this.slideTo(this.index);
     this.transitionOn();
@@ -141,6 +184,11 @@ export default class Carousel extends Component {
   async render() {
     this.$slidesWrapper.innerHTML = this.slidesTemplate;
     this.$slides = Array.from(this.$slidesWrapper.children);
+
+    this.$slides.forEach(($slide) => {
+      console.log(this.slideWidth);
+      $slide.style.width = this.slideWidth;
+    });
 
     const front = this.$slides.slice(0, this.windowSlideSize);
     const back = this.$slides.slice(this.$slides.length - this.windowSlideSize);
@@ -160,10 +208,15 @@ export default class Carousel extends Component {
       this.$slidesWrapper.insertAdjacentElement('afterbegin', $slide);
     });
 
+    if (window.matchMedia('(max-width:576px)').matches) {
+      this.adaptTo('mobile');
+      this.isMobile = true;
+    }
+
     lazyLoad({
       root: this.$,
       rootMargin: '100%',
-      threshold: 1,
+      threshold: 0,
     });
   }
 }

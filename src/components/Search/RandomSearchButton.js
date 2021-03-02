@@ -4,7 +4,8 @@ import api from '../../api/api.js';
 export default class RandomSearchButton extends Component {
   constructor($parent) {
     super($parent, 'button', {
-      textContent: '랜덤 고양이 검색하기',
+      textContent: '랜덤 고양이',
+      className: 'btn',
     });
 
     this.bindEvents();

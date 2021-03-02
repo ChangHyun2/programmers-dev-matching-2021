@@ -8,10 +8,9 @@ export default class CriticalErrorMessage extends BaseComponent {
         <p>${message}</p>
         <p>페이지 클릭 시 개발 화면으로 돌아갑니다.</p>
       `,
+      className: 'CriticalErrorMessage',
       styles: {
         position: 'fixed',
-        backgroundColor: 'yellow',
-        color: '#000',
         zIndex: 2000,
         top: 0,
         left: 0,

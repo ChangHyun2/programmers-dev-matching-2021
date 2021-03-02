@@ -24,8 +24,8 @@ export default class Banner extends Component {
     const slidesTemplate = cats
       .map(
         ({ url, name, id }) => `
-        <li class="Carousel-slide" id-${id}>
-          <div class="img-wrapper lazy">
+        <li class="Carousel-slide pd-1 mb-3" id-${id}>
+          <div class="img-wrapper card lazy">
             <img data-src=${url} alt=${name}/>
             <div class="img-placeholder"/>
           </div>

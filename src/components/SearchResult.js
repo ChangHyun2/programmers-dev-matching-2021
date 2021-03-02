@@ -1,5 +1,5 @@
 import Component from './Component.js';
-import ImageInfo from './ImageInfo.js';
+import CatInfoModal from './CatInfoModal.js';
 import store from '../store.js';
 import api from '../api/api.js';
 import { lazyLoad, localStorage, TypeError } from '../utils/index.js';
@@ -19,25 +19,22 @@ export default class SearchResult extends Component {
   }
 
   onMouseOver = (e) => {
-    const item = e.target.closest('.item');
-    if (!item) return;
+    const $item = e.target.closest('.item');
+    if (!$item) return;
 
-    if (item.querySelector('.item-name')) return;
+    const name = $item.dataset.name;
 
-    const name = item.dataset.name;
+    const $itemName = $item.querySelector('.item-name');
+    if ($itemName.textContent) return;
 
-    const $itemName = document.createElement('span');
-    $itemName.textContent = name;
-    $itemName.className = 'item-name';
-
-    item.querySelector('.img-wrapper').append($itemName);
+    this.addHTML($itemName, `<span>${name}</span>`);
   };
 
   onMouseOut = (e) => {
     const item = e.target.closest('.item');
     if (!item) return;
 
-    item.querySelector('.item-name').remove();
+    item.querySelector('.item-name').textContent = '';
   };
 
   onClick = async (e) => {
@@ -57,15 +54,16 @@ export default class SearchResult extends Component {
       errorTypes: ['api', 'data'],
     });
 
-    catInfo && new ImageInfo(document.body, catInfo).render();
+    catInfo && new CatInfoModal(document.body, catInfo);
   };
 
   createCatCardHTML = (cat) => `
-    <div class="item" id=${cat.id} data-name=${cat.name}>
-      <div class="img-wrapper lazy">
+    <div class="item mb-3" id=${cat.id} data-name=${cat.name}>
+      <div class="img-wrapper lazy card ">
         <img data-src=${cat.url} alt=${cat.name}  />
         <div class="img-placeholder"></div>
       </div>
+      <div class="item-name"></div>
     </div>
   `;
 

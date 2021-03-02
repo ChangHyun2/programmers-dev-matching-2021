@@ -8,7 +8,7 @@ export default class Search extends Component {
     super($parent, 'div', {
       className: 'Search',
       innerHTML: `
-        <div class="Search-cats">
+        <div class="Search-cats mb-3">
         </div>
         <div class="Search-history">
         </div>
