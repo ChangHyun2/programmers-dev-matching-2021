@@ -1,5 +1,4 @@
-https://user-images.githubusercontent.com/56799176/109632744-b8bc8d00-7b8a-11eb-94b7-b7a62747e20e.mp4
-
+[결과물 미리보기](https://user-images.githubusercontent.com/56799176/109632744-b8bc8d00-7b8a-11eb-94b7-b7a62747e20e.mp4)
 
 # 프로그래머스 데브매칭 상반기 준비
 
