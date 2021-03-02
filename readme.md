@@ -1,6 +1,7 @@
-[프로젝트 미리보기](https://user-images.githubusercontent.com/56799176/109632744-b8bc8d00-7b8a-11eb-94b7-b7a62747e20e.mp4)
 
 # 프로그래머스 데브매칭 상반기 준비
+
+## [프로젝트 미리보기](https://user-images.githubusercontent.com/56799176/109632744-b8bc8d00-7b8a-11eb-94b7-b7a62747e20e.mp4)
 
 소스코드 참고 시 출처 표기 부탁드립니다!
 
