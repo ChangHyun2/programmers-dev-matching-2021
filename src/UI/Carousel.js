@@ -127,6 +127,57 @@ export default class Carousel extends Component {
     }
   };
 
+  onTouchstart = (e) => {
+    const { clientX, clientY } = e.touches[0];
+    console.log(e);
+
+    this.touchStart = e.timeStamp;
+    this.touchPosition = { clientX, clientY };
+
+    if (this.interval) {
+      clearInterval(this.autoTimeout);
+      clearInterval(this.resetInterval);
+    }
+  };
+
+  onTouchEnd = (e) => {
+    this.touchStartTimeout = console.log(e);
+    const { clientX, clientY } = e.changedTouches[0];
+    const timeStamp = e.timeStamp;
+
+    const dx = clientX - this.touchPosition.clientX;
+    const dy = clientY - this.touchPosition.clientY;
+    const dt = timeStamp - this.touchStart;
+
+    if (dx === 0) {
+      if (this.interval) {
+        this.autoPlay();
+      }
+
+      return;
+    }
+
+    const distance = Math.sqrt(dx ** 2 + dy ** 2);
+    const velocity = distance / dt;
+    const k = 10;
+
+    const force = velocity ** 2 * k;
+
+    let skips = Math.floor(Math.sqrt(force)) || 1;
+
+    while (skips) {
+      dx > 0 ? this.prevSlide() : this.nextSlide();
+
+      skips--;
+    }
+
+    this.direction = dx > 0 ? 'prev' : 'next';
+
+    if (this.interval) {
+      this.autoPlay();
+    }
+  };
+
   adaptTo(type) {
     let buttonDisplay;
     let windowSlideSize;

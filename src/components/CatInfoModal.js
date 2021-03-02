@@ -24,14 +24,14 @@ export default class CatInfoModal extends Modal {
         className: 'CatInfoModal',
         tabIndex: 0,
         styles: {
-          transition: 'opacity 3ms',
+          transition: 'opacity 300ms',
           opacity: 0,
         },
       }
     );
 
-    this.$.classList.add('fade-in');
     this.$.focus();
+    this.$.classList.add('fade-in');
 
     this.data = data;
     this.bindEvents();
@@ -44,7 +44,7 @@ export default class CatInfoModal extends Modal {
   };
 
   onClick = (e) => {
-    if (e.target === this.$.querySelector('.close')) {
+    if (e.target === this.$.querySelector('.close') || e.target === this.$) {
       this.removeWithFadeOut();
     }
   };

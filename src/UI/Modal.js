@@ -1,29 +1,23 @@
 import Component from '../components/Component.js';
 import Backdrop from './Backdrop.js';
 
-export default class Modal extends Component {
+export default class Modal extends Backdrop {
   constructor(target, content, attributes) {
-    super(target, 'div', {
+    super(target, {
       ...attributes,
-      className: 'Modal ' + attributes.className,
+      className: 'Modal ' + (attributes.className || ''),
       styles: {
         ...attributes.styles,
-        zIndex: 2000,
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
       },
     });
 
-    this.backdrop = new Backdrop(this.$);
-    console.log(this.backdrop);
-
     if (typeof content === 'string') {
-      this.addHTML(this.backdrop.$, content);
+      this.addHTML(this.$, content);
     } else if (typeof content === 'function') {
-      this.$content = new content(this.backdrop.$);
+      this.$content = new content(this.$);
     }
 
     this.bindEvents();
@@ -32,8 +26,4 @@ export default class Modal extends Component {
   render() {
     this.$content && this.$content.render && this.$content.render();
   }
-
-  onClick = (e) => {
-    if (e.target === this.$backdrop) this.$.remove();
-  };
 }
