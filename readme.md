@@ -1,7 +1,9 @@
+https://user-images.githubusercontent.com/56799176/109632744-b8bc8d00-7b8a-11eb-94b7-b7a62747e20e.mp4
+
+
 # 프로그래머스 데브매칭 상반기 준비
 
 소스코드 참고 시 출처 표기 부탁드립니다!
-
 
 ## 개발 일지
 
@@ -9,10 +11,11 @@
 - [02.25](./docs/2021.02.25.md) 
 - [02.26](./docs/2021.02.26.md) 
 - [03.01](./docs/2021.03.01.md) 
+- [03.02](./docs/2021.03.02.md)
+
 
 ## 모듈 의존성
 
-![의존성](./images/programmers-dev-matching%20(1).jpg)
 
 
 ## BaseComponent.js
